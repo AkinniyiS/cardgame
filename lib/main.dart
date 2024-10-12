@@ -97,3 +97,81 @@ class CardModel {
 
   CardModel({required this.frontContent, this.isFaceUp = false});
 }
+
+  class GameState extends ChangeNotifier {
+  List<CardModel> cards = [];
+  CardModel? firstFlippedCard;
+
+  GameState() {
+    _initializeCards();
+  }
+
+  void _initializeCards() {
+    List<String> cardContents = [
+      'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D',
+      'E', 'E', 'F', 'F', 'G', 'G', 'H', 'H',
+    ];
+
+    cardContents.shuffle();
+    cards = cardContents.map((content) => CardModel(frontContent: content)).toList();
+    notifyListeners();
+  }
+
+  void flipCard(CardModel card) {
+    if (card.isFaceUp) return;
+
+    card.isFaceUp = true;
+    notifyListeners();
+
+    if (firstFlippedCard == null) {
+      firstFlippedCard = card;
+    } else {
+      _checkMatch(firstFlippedCard!, card);
+      firstFlippedCard = null;
+    }
+  }
+
+  void _checkMatch(CardModel firstCard, CardModel secondCard) {
+    if (firstCard.frontContent == secondCard.frontContent) {
+      // Match: keep them face-up
+    } else {
+      // No match: flip them back after a delay
+      Future.delayed(const Duration(seconds: 1), () {
+        firstCard.isFaceUp = false;
+        secondCard.isFaceUp = false;
+        notifyListeners();
+      });
+    }
+
+    _checkWinCondition();
+  }
+
+  void _checkWinCondition() {
+    if (cards.every((card) => card.isFaceUp)) {
+      _showWinDialog();
+    }
+  }
+
+  void _showWinDialog() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (_) => AlertDialog(
+          title: const Text("You Win!"),
+          content: const Text("All pairs matched!"),
+          actions: [
+            TextButton(
+              child: const Text("Play Again"),
+              onPressed: () {
+                _initializeCards();
+                Navigator.of(navigatorKey.currentContext!).pop();
+              },
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
