@@ -22,3 +22,32 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+class GameScreen extends StatelessWidget {
+  const GameScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final gameState = context.watch<GameState>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Card Matching Game'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4, // 4x4 grid
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: gameState.cards.length,
+          itemBuilder: (context, index) {
+            return CardWidget(card: gameState.cards[index]);
+          },
+        ),
+      ),
+    );
+  }
+}
